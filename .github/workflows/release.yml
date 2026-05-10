@@ -11,11 +11,11 @@ on:
   push:
     branches:
       - main
-      - sso-cf
-
     tags:
       # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
       - '[1-2].[0-9]+.[0-9]+'
+  release:
+    types: [published]
 
 defaults:
   run:
@@ -327,8 +327,8 @@ jobs:
           # Check which main tag we are going to build determined by ref_type
           if [[ "${REF_TYPE}" == "tag" ]]; then
             echo "BASE_TAGS=latest${BASE_IMAGE_TAG},${GITHUB_REF#refs/*/}${BASE_IMAGE_TAG}${BASE_IMAGE_TAG//-/,}" | tee -a "${GITHUB_ENV}"
-          elif [[ "${REF_TYPE}" == "branch" ]]; then
-            echo "BASE_TAGS=testing${BASE_IMAGE_TAG}" | tee -a "${GITHUB_ENV}"
+          elif [[ "${REF_TYPE}" == "branch" ]] && [[ "${GITHUB_EVENT_NAME}" != "release" ]]; then
+            echo "BASE_TAGS=testing"
           fi
 
       - name: Create manifest list, push it and extract digest SHA
